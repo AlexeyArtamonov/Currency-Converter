@@ -8,9 +8,16 @@ namespace Currency_Converter
 {
     static class Converter
     {
-        public static double Convert(double From_normalized_value, double To_normailez_value, double amount)
+        private static DBWorker dB = new DBWorker("config.cfg");
+        public static double Convert(string From, string To, DateTime OnDate, double Amount)
         {
-            return amount * (From_normalized_value / To_normailez_value);
+            var data = dB.GetDataFromDB(OnDate, To);
+            //return Amount * (data.Item1 / data.Item2);
+            return data;
+        }
+        public static List<string> Get_Availible()
+        {
+            return dB.GetAllCodes();
         }
     }
 }
