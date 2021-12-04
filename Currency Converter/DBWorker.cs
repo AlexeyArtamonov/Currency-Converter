@@ -2,6 +2,7 @@
 using System.Net;
 using System.Xml;
 using MySql.Data.MySqlClient;
+using System.Collections.Generic;
 
 namespace Currency_Converter
 {
@@ -12,14 +13,13 @@ namespace Currency_Converter
         {
             SqlServer = new MySqlConnection(ReadConfig(Config_Path));
         }
-        private bool LoadDataFromServer(DateTime Date)
+        private void LoadDataFromServer(DateTime Date)
         {
+
             string xml;
             using (var client = new WebClient())
             {
-                string ate = Date.ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture);
-                Console.WriteLine(ate);
-                xml = client.DownloadString($"https://www.cbr.ru/scripts/XML_daily.asp?date_req={ate}");
+                xml = client.DownloadString($"https://www.cbr.ru/scripts/XML_daily.asp?date_req={Date.ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture)}");
             }
             XmlDocument xmlDocument = new XmlDocument();
             xmlDocument.LoadXml(xml);
@@ -34,41 +34,86 @@ namespace Currency_Converter
                     $",{element.GetElementsByTagName("Value").Item(0).InnerText.ToString().Replace(',', '.')});", SqlServer);
                 command.ExecuteNonQuery();
             }
-
-            MySqlCommand com = new MySqlCommand("delete t1 FROM cur t1 INNER JOIN cur t2 WHERE t1.id > t2.id AND t1.Date = t2.Date AND t1.Code = t2.Code;", SqlServer);
-            com.ExecuteNonQuery();
-            return true;
         }
-        public (double, int) GetDataFromDB(DateTime date, string Code)
+        public double GetDataFromDB(DateTime date, string Code)
         {
+            if (Code == "RUB")
+                return 1.0;
             SqlServer.Open();
 
             MySqlCommand command;
-
-            // Проверить если данные в БД, и загрузить их с сервера если нет
-            command = new MySqlCommand($"SELECT EXISTS(SELECT Date FROM cur WHERE Date = '{date.ToString("dd/MM/yyyy")});')", SqlServer);
+            
+            command = new MySqlCommand($"SELECT EXISTS(SELECT Date FROM cur WHERE Date = '{date.ToString("dd/MM/yyyy")}');", SqlServer);
             if (Convert.ToInt32(command.ExecuteScalar()) == 0)
                 LoadDataFromServer(date);
 
-            // Произвести выборку
-            command = new MySqlCommand($"SELECT Value, Nominal FROM cur WHERE Date = '{date.ToString("dd/MM/yyyy")}' AND Code = '{Code}';", SqlServer);
-            Console.WriteLine(command.CommandText);
+            command = new MySqlCommand($"SELECT Value / Nominal AS Rate FROM cur WHERE Date = '{date.ToString("dd/MM/yyyy")}' AND Code = '{Code}';", SqlServer);
             MySqlDataReader reader = command.ExecuteReader();
 
-            double values = 0;
-            int nominal = 0;
+            double rate = 0.0;
 
             if (reader.Read())
             {
-
-                values = reader.GetDouble("Value");
-                nominal = reader.GetInt32("Nominal");
+                if (!reader.IsDBNull(0))
+                    rate = reader.GetDouble("Rate");
             }
 
             reader.Close();
             SqlServer.Close();
 
-            return (values, nominal);
+            return rate;
+        }
+        public (double, double) GetDataFromDB(DateTime date, string first_code, string second_code)
+        {
+            double first_rate = 0;
+
+            double second_rate = 0;
+            if (first_code == "RUB")
+                first_rate = 1;
+            if (second_code == "RUB")
+                second_rate = 1;
+            SqlServer.Open();
+
+            MySqlCommand command;
+
+            command = new MySqlCommand($"SELECT EXISTS(SELECT Date FROM cur WHERE Date = '{date.ToString("dd/MM/yyyy")}');", SqlServer);
+            if (Convert.ToInt32(command.ExecuteScalar()) == 0)
+                LoadDataFromServer(date);
+
+            command = new MySqlCommand($"SELECT Value / Nominal AS Rate, Code FROM cur WHERE Date = '{date.ToString("dd/MM/yyyy")}' AND (Code = '{first_code}' OR Code = '{second_code}');", SqlServer);
+            MySqlDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                if (!reader.IsDBNull(1) && !reader.IsDBNull(0))
+                {
+                    string temp = reader.GetString("Code");
+                    if (temp == first_code)
+                        first_rate = reader.GetDouble("Rate");
+                    else
+                        second_rate = reader.GetDouble("Rate");
+                }
+            }
+            reader.Close();
+            SqlServer.Close();
+
+            return (first_rate, second_rate);
+        }
+        public List<string> GetAllCodes()
+        {
+            SqlServer.Open();
+            MySqlCommand command = new MySqlCommand("SELECT DISTINCT Code FROM cur;",SqlServer);
+            MySqlDataReader reader =  command.ExecuteReader();
+
+            List<string> codes = new List<string>();
+            while(reader.Read())
+            {
+                if (!reader.IsDBNull(0))
+                    codes.Add(reader.GetString("Code"));
+            }
+            reader.Close();
+            SqlServer.Close();
+            return codes;
         }
         private string ReadConfig(string Path)
         {
