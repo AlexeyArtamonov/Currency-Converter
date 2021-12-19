@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
-using Currency_Converter.Consloe_Commands;
-
+using Currency_Converter.Console_Commands;
 
 namespace Currency_Converter
 {
@@ -29,24 +28,28 @@ namespace Currency_Converter
     {
         static void Main(string[] args)
         {
-            if (args.Length == 0)
-                Converter();
-            switch (args[0])
+            if (args.Length == 0 || args[0] != "--update")
             {
-                case "--update":
-                    Update();
-                    break;
-                default:
-                    Converter();
-                    break;
+                Converter();
+            }
+            else
+            {
+                Update();
             }
         } 
         static void Converter()
         {
+            Console.WriteLine("\t\t== Конвертер валют ==");
+            Console.WriteLine("\tВведите help для получения списка комманд");
+
             string input;
+
+            Console.OutputEncoding = System.Text.Encoding.Unicode;
+
             while (true)
-            { 
+            {
                 input = Console.ReadLine();
+                Console.WriteLine(new String('\u203E', input.Length)); // '-';
                 input = Regex.Replace(input, @"\s+", " ");
 
                 switch (Commands.Formalize(input.Split(' ')[0]))
@@ -57,7 +60,12 @@ namespace Currency_Converter
                         }
                     case "show":
                         {
-                            Commands.Show();
+                            Commands.Show(input);
+                            break;
+                        }
+                    case "showex":
+                        {
+                            Commands.ShowEx(input);
                             break;
                         }
                     case "convert":
@@ -78,7 +86,8 @@ namespace Currency_Converter
                     case "clear":
                         {
                             Console.Clear();
-                            continue;
+                            Console.WriteLine("\t\t== Конвертер валют ==");
+                            break;
                         }
                     case "help":
                         {

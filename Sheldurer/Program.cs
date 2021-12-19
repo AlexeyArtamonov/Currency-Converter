@@ -35,7 +35,7 @@ namespace Sheldurer
             
             IAction action = actions.Create(actionType);
             IExecAction execAction = action as IExecAction;
-            execAction.Path = @"C:\Users\Alexey\source\repos\Currency Converter\Currency Converter\bin\Debug\Currency Converter.exe --update";
+            execAction.Path = @"C:\Users\Alexey\source\repos\Currency Converter\Currency Converter\bin\Debug\""Currency Converter.exe"" --update";
             ITaskFolder rootFolder = TaskSheldurer.GetFolder(@"\");
 
             

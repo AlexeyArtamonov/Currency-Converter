@@ -1,10 +1,15 @@
 ﻿using System.Collections.Generic;
-
-namespace Currency_Converter.Consloe_Commands
+using System;
+namespace Currency_Converter.Console_Commands
 {
     static partial class Commands
     {
         static List<string> Codes;
+        static DateTime Codes_date;
+
+        static List<(string, string)> CodesEx;
+        static DateTime CodesEx_date;
+
         static Dictionary<string, string> dictionary = new Dictionary<string, string>()
         {
             {"quit",    "exit" },
@@ -44,8 +49,13 @@ namespace Currency_Converter.Consloe_Commands
             {"quota",   "quota" },
 
             {"help",    "help" },
-            {"clear",   "clear" },
 
+            {"clear",   "clear" },
+            {"cl",   "clear" },
+
+
+            {"showex",  "showex" },
+            {"sx",      "showex" },
         };
         public static string Formalize(string word)
         {
@@ -55,6 +65,26 @@ namespace Currency_Converter.Consloe_Commands
             else
                 return "Not Found";
 
+        }
+        public static void Print_in_a_border(string str)
+        {
+            Console.Write('+');
+            for (int i = 1; i < str.Length + 1; i++)
+            {
+                Console.Write('-');
+            }
+            Console.Write("+\n");
+
+            Console.Write('|');
+            Console.Write(str);
+            Console.Write("|\n");
+
+            Console.Write('+');
+            for (int i = 1; i < str.Length + 1; i++)
+            {
+                Console.Write('-');
+            }
+            Console.Write('+');
         }
     }
 }

@@ -11,9 +11,13 @@ namespace Currency_Converter
             var data = dB.GetDataFromDB(OnDate, From, To);
             return Amount * (data.Item1 / data.Item2);
         }
-        public static List<string> Get_Availible()
+        public static List<string> Get_Availible(DateTime date)
         {
-            return dB.GetAllCodes();
+            return dB.GetAllCodes(date);
+        }
+        public static List<(string, string)> Get_Availible_Ex(DateTime date)
+        { 
+            return dB.GetAllCodesEx(date);
         }
     }
 }

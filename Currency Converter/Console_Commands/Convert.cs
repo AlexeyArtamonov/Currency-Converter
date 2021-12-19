@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Currency_Converter.Consloe_Commands
+namespace Currency_Converter.Console_Commands
 {
     static partial class Commands
     {
@@ -15,6 +15,11 @@ namespace Currency_Converter.Consloe_Commands
                 Console.WriteLine("Агрумент -from отсутствует");
                 return;
             }
+            if (position == args.Length - 1)
+            {
+                Console.WriteLine("У аргумента -from отсутствует значение");
+                return;
+            }
             string From = args[position + 1].ToUpper();
             if (From.Length != 3)
             {
@@ -23,9 +28,14 @@ namespace Currency_Converter.Consloe_Commands
             }
 
             position = Array.FindIndex(args, (string str) => Formalize(str) == "-to");
-            if (position < 0)
+            if (position < 0 || position == args.Length -1)
             {
                 Console.WriteLine("Агрумент -to отсутствует");
+                return;
+            }
+            if (position == args.Length - 1)
+            {
+                Console.WriteLine("У аргумента -from отсутствует значение");
                 return;
             }
             string To = args[position + 1].ToUpper();
@@ -36,9 +46,13 @@ namespace Currency_Converter.Consloe_Commands
             }
 
             position = Array.FindIndex(args, (string str) => Formalize(str) == "-amount");
+            if (position == args.Length - 1)
+            {
+                Console.WriteLine("У аргумента -amount отсутствует значение");
+                return;
+            }
             string temp_amount = args[position + 1];
             double amount = 1;
-
             if (position >= 0 && !Double.TryParse(temp_amount.Replace('.', ','), out amount))
             {
                 Console.WriteLine("Агрумент -amount имеет некоректнное значение");
@@ -46,39 +60,28 @@ namespace Currency_Converter.Consloe_Commands
             }
 
             position = Array.FindIndex(args, (string str) => Formalize(str) == "-date");
+            if (position == args.Length - 1)
+            {
+                Console.WriteLine("У аргумента -date отсутствует значение");
+                return;
+            }
             string temp_date = args[position + 1];
             DateTime date = DateTime.Now;
-
             if (position >= 0 && !DateTime.TryParse(temp_date, out date))
             {
                 Console.WriteLine("Агрумент -date имеет некоректнное значение");
                 return;
             }
+
             double temp_result = Currency_Converter.Converter.Convert(From, To, date, amount);
-            if (temp_result == 0)
+            if (temp_result == 0 && amount != 0)
             {
                 Console.WriteLine("Данные не найденны");
                 return;
             }
             string result = $"{amount} {From} = {temp_result} {To} на {date.ToShortDateString()}";
 
-            Console.Write('+');
-            for (int i = 1; i < result.Length + 1; i++)
-            {
-                Console.Write('-');
-            }
-            Console.Write("+\n");
-
-            Console.Write('|');
-            Console.Write(result);
-            Console.Write("|\n");
-
-            Console.Write('+');
-            for (int i = 1; i < result.Length + 1; i++)
-            {
-                Console.Write('-');
-            }
-            Console.Write('+');
+            Print_in_a_border(result);
             Console.WriteLine();
         }
     }

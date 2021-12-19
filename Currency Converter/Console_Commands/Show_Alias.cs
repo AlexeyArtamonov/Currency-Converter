@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-
-namespace Currency_Converter.Consloe_Commands
+namespace Currency_Converter.Console_Commands
 {
     static partial class Commands
     {
@@ -13,6 +12,7 @@ namespace Currency_Converter.Consloe_Commands
 
             bool first = true;
 
+            // Обход по значениям с игнорированием повторов
             foreach (var item in dictionary.OrderBy(a => a.Value))
             {
                 dictionary.TryGetValue(item.Key, out temp);

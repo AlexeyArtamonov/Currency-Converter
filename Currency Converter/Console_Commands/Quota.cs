@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Currency_Converter.Consloe_Commands
+namespace Currency_Converter.Console_Commands
 {
     static partial class Commands
     {
@@ -23,6 +23,12 @@ namespace Currency_Converter.Consloe_Commands
             }
 
             position = Array.FindIndex(args, (string str) => Formalize(str) == "-date");
+            if (position == args.Length - 1)
+            {
+                Console.WriteLine("У аргумента -date отсутствует значение");
+                return;
+            }
+
             string temp_date = args[position + 1];
             DateTime date = DateTime.Now;
 
@@ -31,13 +37,16 @@ namespace Currency_Converter.Consloe_Commands
                 Console.WriteLine("Агрумент -date имеет некоректнное значение");
                 return;
             }
+
             double result = Currency_Converter.Converter.Convert(from, "RUB", date, 1);
             if (result == 0)
             {
                 Console.WriteLine("Данные не найденны");
                 return;
             }
-            Console.WriteLine($"Курс {from}: {result} на {date.ToShortDateString()}");
+
+            Print_in_a_border($"Курс {from}: {result} RUB на {date.ToShortDateString()}");
+            Console.WriteLine();
         }
     }
 }
